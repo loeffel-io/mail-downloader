@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/loeffel-io/helper"
 	"io/ioutil"
 	"log"
 )
@@ -38,6 +39,8 @@ func main() {
 		if len(mail.Attachments) == 0 {
 			continue
 		}
+
+		helper.Debug(mail.Subject, mail.Date.UTC().Local())
 
 		for _, attachment := range mail.Attachments {
 			err = ioutil.WriteFile("files/"+attachment.Filename, attachment.Body, 0644)

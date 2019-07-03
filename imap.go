@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
+	"time"
 )
 
 type imap struct {
@@ -17,6 +18,8 @@ type imap struct {
 
 type mail struct {
 	Subject     string
+	From        []*m.Address
+	Date        time.Time
 	Text        [][]byte
 	Attachments []*attachment
 }
@@ -47,8 +50,8 @@ func (imap *imap) getMailbox(mailbox string) (*i.MailboxStatus, error) {
 
 func (imap *imap) fetchMessages(mailbox *i.MailboxStatus) ([]*mail, error) {
 	seqset := new(i.SeqSet)
-	seqset.AddRange(mailbox.Messages, mailbox.Messages-10)
-	messages := make(chan *i.Message, 10+1)
+	seqset.AddRange(mailbox.Messages, mailbox.Messages-100)
+	messages := make(chan *i.Message, 100+1)
 	section := new(i.BodySectionName)
 
 	if err := imap.Client.Fetch(seqset, []i.FetchItem{section.FetchItem()}, messages); err != nil {
@@ -82,12 +85,26 @@ func (imap *imap) fetchMessages(mailbox *i.MailboxStatus) ([]*mail, error) {
 }
 
 func (imap *imap) readMessage(reader *m.Reader) (*mail, error) {
-	var mail = new(mail)
 	subject, err := reader.Header.Subject()
 
 	if err != nil {
 		return nil, err
 	}
+
+	from, err := reader.Header.AddressList("From")
+
+	if err != nil {
+		return nil, err
+	}
+
+	date, err := reader.Header.Date()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var mailTexts [][]byte
+	var mailAttachments []*attachment
 
 	for {
 		part, err := reader.NextPart()
@@ -107,7 +124,7 @@ func (imap *imap) readMessage(reader *m.Reader) (*mail, error) {
 				return nil, err
 			}
 
-			mail.Text = append(mail.Text, body)
+			mailTexts = append(mailTexts, body)
 		case *m.AttachmentHeader:
 			// This is an attachment
 			filename, err := header.Filename()
@@ -122,14 +139,18 @@ func (imap *imap) readMessage(reader *m.Reader) (*mail, error) {
 				return nil, err
 			}
 
-			mail.Attachments = append(mail.Attachments, &attachment{
+			mailAttachments = append(mailAttachments, &attachment{
 				Filename: filename,
 				Body:     body,
 			})
 		}
 	}
 
-	mail.Subject = subject
-
-	return mail, nil
+	return &mail{
+		Subject:     subject,
+		From:        from,
+		Date:        date,
+		Text:        mailTexts,
+		Attachments: mailAttachments,
+	}, nil
 }
