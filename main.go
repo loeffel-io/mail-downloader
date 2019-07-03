@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/loeffel-io/helper"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -41,14 +41,14 @@ func main() {
 			continue
 		}
 
-		helper.Debug(mail.Subject, mail.Date.UTC().Local(), mail.From[0].Address)
-
 		for _, attachment := range mail.Attachments {
-			if err := os.MkdirAll("files/"+mail.From[0].Address, os.ModePerm); err != nil {
+			dir := fmt.Sprintf("files/%s-%d/%s", mail.Date.Month(), mail.Date.Year(), mail.From[0].Address)
+
+			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 				log.Fatal(err)
 			}
 
-			if err = ioutil.WriteFile("files/"+mail.From[0].Address+"/"+attachment.Filename, attachment.Body, 0644); err != nil {
+			if err = ioutil.WriteFile(dir+"/"+attachment.Filename, attachment.Body, 0644); err != nil {
 				log.Fatal(err)
 			}
 		}
