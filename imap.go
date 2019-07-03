@@ -103,8 +103,10 @@ func (imap *imap) readMessage(reader *m.Reader) (*mail, error) {
 		return nil, err
 	}
 
-	var mailTexts [][]byte
-	var mailAttachments []*attachment
+	var (
+		bodies      [][]byte
+		attachments []*attachment
+	)
 
 	for {
 		part, err := reader.NextPart()
@@ -124,7 +126,7 @@ func (imap *imap) readMessage(reader *m.Reader) (*mail, error) {
 				return nil, err
 			}
 
-			mailTexts = append(mailTexts, body)
+			bodies = append(bodies, body)
 		case *m.AttachmentHeader:
 			// This is an attachment
 			filename, err := header.Filename()
@@ -139,7 +141,7 @@ func (imap *imap) readMessage(reader *m.Reader) (*mail, error) {
 				return nil, err
 			}
 
-			mailAttachments = append(mailAttachments, &attachment{
+			attachments = append(attachments, &attachment{
 				Filename: filename,
 				Body:     body,
 			})
@@ -150,7 +152,7 @@ func (imap *imap) readMessage(reader *m.Reader) (*mail, error) {
 		Subject:     subject,
 		From:        from,
 		Date:        date,
-		Text:        mailTexts,
-		Attachments: mailAttachments,
+		Text:        bodies,
+		Attachments: attachments,
 	}, nil
 }
