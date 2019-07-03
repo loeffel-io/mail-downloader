@@ -4,6 +4,7 @@ import (
 	"github.com/loeffel-io/helper"
 	"io/ioutil"
 	"log"
+	"os"
 )
 
 func main() {
@@ -40,12 +41,14 @@ func main() {
 			continue
 		}
 
-		helper.Debug(mail.Subject, mail.Date.UTC().Local())
+		helper.Debug(mail.Subject, mail.Date.UTC().Local(), mail.From[0].Address)
 
 		for _, attachment := range mail.Attachments {
-			err = ioutil.WriteFile("files/"+attachment.Filename, attachment.Body, 0644)
+			if err := os.MkdirAll("files/"+mail.From[0].Address, os.ModePerm); err != nil {
+				log.Fatal(err)
+			}
 
-			if err != nil {
+			if err = ioutil.WriteFile("files/"+mail.From[0].Address+"/"+attachment.Filename, attachment.Body, 0644); err != nil {
 				log.Fatal(err)
 			}
 		}
