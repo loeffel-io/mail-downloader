@@ -42,7 +42,7 @@ func main() {
 		}
 
 		for _, attachment := range mail.Attachments {
-			dir := fmt.Sprintf("files/%s-%d/%s", mail.Date.Month(), mail.Date.Year(), mail.From[0].Address)
+			dir := fmt.Sprintf("files/%s/%s-%d/%s", imap.Username, mail.Date.Month(), mail.Date.Year(), mail.From[0].Address)
 
 			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 				log.Fatal(err)
