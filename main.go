@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -55,10 +54,7 @@ func main() {
 		}
 
 		for _, attachment := range mail.Attachments {
-			dir := fmt.Sprintf(
-				"files/%s/%s-%d/%s",
-				imap.Username, mail.Date.Month(), mail.Date.Year(), mail.From[0].HostName,
-			)
+			dir := mail.getDirectoryName(imap.Username)
 
 			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 				log.Fatal(err)

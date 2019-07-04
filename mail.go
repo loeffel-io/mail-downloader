@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	i "github.com/emersion/go-imap"
 	m "github.com/emersion/go-message/mail"
 	"github.com/pkg/errors"
@@ -88,4 +89,11 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 	mail.Attachments = attachments
 
 	return nil
+}
+
+func (mail *mail) getDirectoryName(username string) string {
+	return fmt.Sprintf(
+		"files/%s/%s-%d/%s",
+		username, mail.Date.Month(), mail.Date.Year(), mail.From[0].HostName,
+	)
 }
