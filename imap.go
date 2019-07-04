@@ -68,6 +68,8 @@ func (imap *imap) fetchMessages(mailbox *i.MailboxStatus) ([]*mail, error) {
 }
 
 func (imap *imap) parseMail(message *i.Message, mailReader *m.Reader) *mail {
+	defer mailReader.Close()
+
 	mail := new(mail)
 	mail.fetchMeta(message)
 	mail.Error = mail.fetchBody(mailReader)
