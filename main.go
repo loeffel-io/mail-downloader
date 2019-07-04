@@ -23,6 +23,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// charset reader
+	imap.enableCharsetReader()
+
 	// mailbox
 	inbox, err := imap.getMailbox("INBOX")
 

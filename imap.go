@@ -3,30 +3,15 @@ package main
 import (
 	i "github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/client"
+	"github.com/emersion/go-message/charset"
 	m "github.com/emersion/go-message/mail"
 	"github.com/pkg/errors"
-	"io"
-	"io/ioutil"
-	"time"
 )
 
 type imap struct {
 	Username string
 	Password string
 	Client   *client.Client
-}
-
-type mail struct {
-	Subject     string
-	From        []*m.Address
-	Date        time.Time
-	Text        [][]byte
-	Attachments []*attachment
-}
-
-type attachment struct {
-	Filename string
-	Body     []byte
 }
 
 func (imap *imap) connect() error {
@@ -48,13 +33,17 @@ func (imap *imap) getMailbox(mailbox string) (*i.MailboxStatus, error) {
 	return imap.Client.Select(mailbox, true)
 }
 
+func (imap *imap) enableCharsetReader() {
+	i.CharsetReader = charset.Reader
+}
+
 func (imap *imap) fetchMessages(mailbox *i.MailboxStatus) ([]*mail, error) {
 	seqset := new(i.SeqSet)
-	seqset.AddRange(mailbox.Messages, mailbox.Messages-100)
-	messages := make(chan *i.Message, 100+1)
+	seqset.AddRange(mailbox.Messages, mailbox.Messages-1000)
+	messages := make(chan *i.Message, 1000+1)
 	section := new(i.BodySectionName)
 
-	if err := imap.Client.Fetch(seqset, []i.FetchItem{section.FetchItem()}, messages); err != nil {
+	if err := imap.Client.Fetch(seqset, []i.FetchItem{section.FetchItem(), i.FetchEnvelope}, messages); err != nil {
 		return nil, err
 	}
 
@@ -63,7 +52,7 @@ func (imap *imap) fetchMessages(mailbox *i.MailboxStatus) ([]*mail, error) {
 		reader := message.GetBody(section)
 
 		if reader == nil {
-			return nil, errors.New("no message body")
+			return nil, errors.New("no reader")
 		}
 
 		mailReader, err := m.CreateReader(reader)
@@ -72,87 +61,16 @@ func (imap *imap) fetchMessages(mailbox *i.MailboxStatus) ([]*mail, error) {
 			return nil, err
 		}
 
-		mail, err := imap.readMessage(mailReader)
-
-		if err != nil {
-			return nil, err
-		}
-
-		mails = append(mails, mail)
+		mails = append(mails, imap.parseMail(message, mailReader))
 	}
 
 	return mails, nil
 }
 
-func (imap *imap) readMessage(reader *m.Reader) (*mail, error) {
-	subject, err := reader.Header.Subject()
+func (imap *imap) parseMail(message *i.Message, mailReader *m.Reader) *mail {
+	mail := new(mail)
+	mail.fetchMeta(message)
+	mail.Error = mail.fetchBody(mailReader)
 
-	if err != nil {
-		return nil, err
-	}
-
-	from, err := reader.Header.AddressList("From")
-
-	if err != nil {
-		return nil, err
-	}
-
-	date, err := reader.Header.Date()
-
-	if err != nil {
-		return nil, err
-	}
-
-	var (
-		bodies      [][]byte
-		attachments []*attachment
-	)
-
-	for {
-		part, err := reader.NextPart()
-		if err == io.EOF {
-			break
-		}
-
-		if err != nil {
-			continue
-		}
-
-		switch header := part.Header.(type) {
-		case *m.InlineHeader:
-			body, err := ioutil.ReadAll(part.Body)
-
-			if err != nil {
-				return nil, err
-			}
-
-			bodies = append(bodies, body)
-		case *m.AttachmentHeader:
-			// This is an attachment
-			filename, err := header.Filename()
-
-			if err != nil {
-				return nil, err
-			}
-
-			body, err := ioutil.ReadAll(part.Body)
-
-			if err != nil {
-				return nil, err
-			}
-
-			attachments = append(attachments, &attachment{
-				Filename: filename,
-				Body:     body,
-			})
-		}
-	}
-
-	return &mail{
-		Subject:     subject,
-		From:        from,
-		Date:        date,
-		Text:        bodies,
-		Attachments: attachments,
-	}, nil
+	return mail
 }
