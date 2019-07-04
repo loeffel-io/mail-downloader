@@ -3,6 +3,7 @@ package main
 import (
 	i "github.com/emersion/go-imap"
 	m "github.com/emersion/go-message/mail"
+	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"time"
@@ -64,6 +65,10 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 
 			if err != nil {
 				return err
+			}
+
+			if filename == "" {
+				return errors.New("attachment without filename")
 			}
 
 			body, err := ioutil.ReadAll(part.Body)
