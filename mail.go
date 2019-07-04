@@ -50,6 +50,10 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 			body, err := ioutil.ReadAll(part.Body)
 
 			if err != nil {
+				if err == io.ErrUnexpectedEOF {
+					continue
+				}
+
 				return err
 			}
 
