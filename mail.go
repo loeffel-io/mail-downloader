@@ -99,5 +99,5 @@ func (mail *mail) getDirectoryName(username string) string {
 }
 
 func (mail *mail) getErrorText() string {
-	return fmt.Sprintf("ERROR: %s\nSUBJECT: %s\nFROM: %s\n", mail.Error.Error(), mail.Subject, mail.Date.Local())
+	return fmt.Sprintf("Error: %s\nSubject: %s\nFrom: %s\n", mail.Error.Error(), mail.Subject, mail.Date.Local())
 }
