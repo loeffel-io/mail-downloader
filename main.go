@@ -42,10 +42,7 @@ func main() {
 	// out messages
 	for _, mail := range mails {
 		if mail.Error != nil {
-			log.Printf(
-				"ERROR: %s\nSUBJECT: %s\nFROM: %s\n",
-				mail.Error.Error(), mail.Subject, mail.Date.Local(),
-			)
+			log.Println(mail.getErrorText())
 			continue
 		}
 

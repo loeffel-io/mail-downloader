@@ -97,3 +97,7 @@ func (mail *mail) getDirectoryName(username string) string {
 		username, mail.Date.Month(), mail.Date.Year(), mail.From[0].HostName,
 	)
 }
+
+func (mail *mail) getErrorText() string {
+	return fmt.Sprintf("ERROR: %s\nSUBJECT: %s\nFROM: %s\n", mail.Error.Error(), mail.Subject, mail.Date.Local())
+}
