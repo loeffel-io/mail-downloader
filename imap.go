@@ -1,11 +1,13 @@
 package main
 
 import (
+	"github.com/cheggaaa/pb"
 	i "github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/client"
 	"github.com/emersion/go-message/charset"
 	m "github.com/emersion/go-message/mail"
 	"github.com/pkg/errors"
+	"log"
 )
 
 type imap struct {
@@ -37,18 +39,23 @@ func (imap *imap) enableCharsetReader() {
 	i.CharsetReader = charset.Reader
 }
 
-func (imap *imap) fetchMessages(mailbox *i.MailboxStatus) ([]*mail, error) {
+func (imap *imap) fetchMessages(mailbox *i.MailboxStatus, bar *pb.ProgressBar) ([]*mail, error) {
+	var mails []*mail
 	seqset := new(i.SeqSet)
-	seqset.AddRange(mailbox.Messages, mailbox.Messages-4000)
-	messages := make(chan *i.Message, 4000+1)
+	seqset.AddRange(1, mailbox.Messages)
+	messages := make(chan *i.Message)
 	section := new(i.BodySectionName)
 
-	if err := imap.Client.Fetch(seqset, []i.FetchItem{section.FetchItem(), i.FetchEnvelope}, messages); err != nil {
-		return nil, err
-	}
+	go func() {
+		if err := imap.Client.Fetch(seqset, []i.FetchItem{section.FetchItem(), i.FetchEnvelope}, messages); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
-	var mails []*mail
 	for message := range messages {
+		mail := new(mail)
+		mail.fetchMeta(message)
+
 		reader := message.GetBody(section)
 
 		if reader == nil {
@@ -58,21 +65,18 @@ func (imap *imap) fetchMessages(mailbox *i.MailboxStatus) ([]*mail, error) {
 		mailReader, err := m.CreateReader(reader)
 
 		if err != nil {
-			return nil, err
+			mail.Error = err
+			mails = append(mails, mail)
+			mailReader.Close()
+			bar.Increment()
+			continue
 		}
 
-		mails = append(mails, imap.parseMail(message, mailReader))
+		mail.Error = mail.fetchBody(mailReader)
+		mails = append(mails, mail)
+		mailReader.Close()
+		bar.Increment()
 	}
 
 	return mails, nil
-}
-
-func (imap *imap) parseMail(message *i.Message, mailReader *m.Reader) *mail {
-	defer mailReader.Close()
-
-	mail := new(mail)
-	mail.fetchMeta(message)
-	mail.Error = mail.fetchBody(mailReader)
-
-	return mail
 }

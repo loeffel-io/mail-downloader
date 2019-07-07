@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/cheggaaa/pb"
 	"io/ioutil"
 	"log"
 	"os"
@@ -32,12 +33,18 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// start bar
+	bar := pb.StartNew(int(inbox.Messages))
+
 	// fetch messages
-	mails, err := imap.fetchMessages(inbox)
+	mails, err := imap.fetchMessages(inbox, bar)
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// stop bar
+	bar.Finish()
 
 	// out messages
 	for _, mail := range mails {
