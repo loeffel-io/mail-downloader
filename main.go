@@ -11,6 +11,8 @@ func main() {
 	imap := &imap{
 		Username: "lucas.loeffel@gmail.com",
 		Password: "eoppezuwhutdhxpb",
+		Server:   "imap.gmail.com",
+		Port:     "993",
 	}
 
 	// connection
@@ -40,7 +42,7 @@ func main() {
 	mails, err := imap.fetchMessages(inbox, bar)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	// stop bar
@@ -61,11 +63,11 @@ func main() {
 			dir := mail.getDirectoryName(imap.Username)
 
 			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
 
 			if err = ioutil.WriteFile(dir+"/"+attachment.Filename, attachment.Body, 0644); err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
 		}
 	}

@@ -13,11 +13,13 @@ import (
 type imap struct {
 	Username string
 	Password string
+	Server   string
+	Port     string
 	Client   *client.Client
 }
 
 func (imap *imap) connect() error {
-	c, err := client.DialTLS("imap.gmail.com:993", nil)
+	c, err := client.DialTLS(imap.Server+":"+imap.Port, nil)
 
 	if err != nil {
 		return err
@@ -42,13 +44,13 @@ func (imap *imap) enableCharsetReader() {
 func (imap *imap) fetchMessages(mailbox *i.MailboxStatus, bar *pb.ProgressBar) ([]*mail, error) {
 	var mails []*mail
 	seqset := new(i.SeqSet)
-	seqset.AddRange(1, mailbox.Messages)
+	seqset.AddRange(28000, mailbox.Messages)
 	messages := make(chan *i.Message)
 	section := new(i.BodySectionName)
 
 	go func() {
 		if err := imap.Client.Fetch(seqset, []i.FetchItem{section.FetchItem(), i.FetchEnvelope}, messages); err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 	}()
 
@@ -65,6 +67,7 @@ func (imap *imap) fetchMessages(mailbox *i.MailboxStatus, bar *pb.ProgressBar) (
 		mailReader, err := m.CreateReader(reader)
 
 		if err != nil {
+			log.Println(err.Error())
 			mail.Error = err
 			mails = append(mails, mail)
 			mailReader.Close()
@@ -73,6 +76,9 @@ func (imap *imap) fetchMessages(mailbox *i.MailboxStatus, bar *pb.ProgressBar) (
 		}
 
 		mail.Error = mail.fetchBody(mailReader)
+		if mail.Error != nil {
+			log.Println(mail.Error.Error())
+		}
 		mails = append(mails, mail)
 		mailReader.Close()
 		bar.Increment()

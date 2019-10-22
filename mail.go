@@ -4,6 +4,7 @@ import (
 	"fmt"
 	i "github.com/emersion/go-imap"
 	m "github.com/emersion/go-message/mail"
+	"github.com/loeffel-io/helper"
 	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
@@ -71,6 +72,8 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 			}
 
 			if filename == "" {
+				helper.Debug(header.ContentDisposition())
+				helper.Debug(header.ContentType())
 				return errors.New("attachment without filename")
 			}
 
