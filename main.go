@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/cheggaaa/pb"
 	"io/ioutil"
 	"log"
@@ -8,11 +9,17 @@ import (
 )
 
 func main() {
+	username := flag.String("username", "", "username")
+	password := flag.String("password", "", "password")
+	server := flag.String("server", "", "server")
+	port := flag.String("port", "", "port")
+	flag.Parse()
+
 	imap := &imap{
-		Username: "lucas.loeffel@gmail.com",
-		Password: "eoppezuwhutdhxpb",
-		Server:   "imap.gmail.com",
-		Port:     "993",
+		Username: *username,
+		Password: *password,
+		Server:   *server,
+		Port:     *port,
 	}
 
 	// connection

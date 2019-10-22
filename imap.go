@@ -44,7 +44,7 @@ func (imap *imap) enableCharsetReader() {
 func (imap *imap) fetchMessages(mailbox *i.MailboxStatus, bar *pb.ProgressBar) ([]*mail, error) {
 	var mails []*mail
 	seqset := new(i.SeqSet)
-	seqset.AddRange(28000, mailbox.Messages)
+	seqset.AddRange(uint32(1), mailbox.Messages)
 	messages := make(chan *i.Message)
 	section := new(i.BodySectionName)
 
