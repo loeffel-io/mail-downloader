@@ -81,6 +81,8 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 				filename = fmt.Sprintf("%d%s", mail.Date.Unix(), mime.Extension())
 			}
 
+			filename = new(imap).fixUtf(filename)
+
 			attachments = append(attachments, &attachment{
 				Filename: filename,
 				Body:     body,

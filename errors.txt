@@ -1,10 +1,6 @@
 FIXME: catch unexpected EOF error
 unexpected EOF
 
-// NO SOLUTION YET
-illegal base64 data at input byte 675
-open files/lucas.loeffel@gmail.com/April-2014/fh-worms.de/AWI-Logo-300-2014-03-31-L�ffel.png: illegal byte sequence
-
 FIXME: create pull request and compare charsets by removing the "-" char
 unhandled charset "utf8"
 unhandled charset "iso8859-15"

@@ -7,6 +7,8 @@ import (
 	m "github.com/emersion/go-message/mail"
 	"github.com/pkg/errors"
 	"log"
+	"strings"
+	"unicode/utf8"
 )
 
 type imap struct {
@@ -38,6 +40,18 @@ func (imap *imap) getMailbox(mailbox string) (*i.MailboxStatus, error) {
 
 func (imap *imap) enableCharsetReader() {
 	i.CharsetReader = charset.Reader
+}
+
+func (imap *imap) fixUtf(str string) string {
+	callable := func(r rune) rune {
+		if r == utf8.RuneError {
+			return -1
+		}
+
+		return r
+	}
+
+	return strings.Map(callable, str)
 }
 
 func (imap *imap) fetchMessages(mailbox *i.MailboxStatus, mailsChan chan *mail) error {
