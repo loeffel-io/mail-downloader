@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/cheggaaa/pb"
 	i "github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/client"
 	"github.com/emersion/go-message/charset"
@@ -41,8 +40,7 @@ func (imap *imap) enableCharsetReader() {
 	i.CharsetReader = charset.Reader
 }
 
-func (imap *imap) fetchMessages(mailbox *i.MailboxStatus, bar *pb.ProgressBar) ([]*mail, error) {
-	var mails []*mail
+func (imap *imap) fetchMessages(mailbox *i.MailboxStatus, mailsChan chan *mail) error {
 	seqset := new(i.SeqSet)
 	seqset.AddRange(uint32(1), mailbox.Messages)
 	messages := make(chan *i.Message)
@@ -61,28 +59,33 @@ func (imap *imap) fetchMessages(mailbox *i.MailboxStatus, bar *pb.ProgressBar) (
 		reader := message.GetBody(section)
 
 		if reader == nil {
-			return nil, errors.New("no reader")
+			return errors.New("no reader")
 		}
 
 		mailReader, err := m.CreateReader(reader)
 
 		if err != nil {
-			log.Println(err.Error())
 			mail.Error = err
-			mails = append(mails, mail)
-			mailReader.Close()
-			bar.Increment()
+			mailsChan <- mail
+
+			if mailReader != nil {
+				if err := mailReader.Close(); err != nil {
+					log.Fatal(err)
+				}
+			}
+
 			continue
 		}
 
 		mail.Error = mail.fetchBody(mailReader)
-		if mail.Error != nil {
-			log.Println(mail.Error.Error())
+		mailsChan <- mail
+
+		if mailReader != nil {
+			if err := mailReader.Close(); err != nil {
+				log.Fatal(err)
+			}
 		}
-		mails = append(mails, mail)
-		mailReader.Close()
-		bar.Increment()
 	}
 
-	return mails, nil
+	return nil
 }

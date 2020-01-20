@@ -9,12 +9,14 @@ import (
 )
 
 func main() {
+	// flags
 	username := flag.String("username", "", "username")
 	password := flag.String("password", "", "password")
 	server := flag.String("server", "", "server")
 	port := flag.String("port", "", "port")
 	flag.Parse()
 
+	// imap
 	imap := &imap{
 		Username: *username,
 		Password: *password,
@@ -22,17 +24,14 @@ func main() {
 		Port:     *port,
 	}
 
-	// connection
 	if err := imap.connect(); err != nil {
 		log.Fatal(err)
 	}
 
-	// login
 	if err := imap.login(); err != nil {
 		log.Fatal(err)
 	}
 
-	// charset reader
 	imap.enableCharsetReader()
 
 	// mailbox
@@ -45,24 +44,26 @@ func main() {
 	// start bar
 	bar := pb.StartNew(int(inbox.Messages))
 
+	// channel
+	var mailsChan = make(chan *mail, inbox.Messages)
+
 	// fetch messages
-	mails, err := imap.fetchMessages(inbox, bar)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	// stop bar
-	bar.Finish()
+	go func() {
+		if err = imap.fetchMessages(inbox, mailsChan); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	// out messages
-	for _, mail := range mails {
+	for mail := range mailsChan {
 		if mail.Error != nil {
 			log.Println(mail.getErrorText())
+			bar.Increment()
 			continue
 		}
 
 		if len(mail.Attachments) == 0 {
+			bar.Increment()
 			continue
 		}
 
@@ -71,10 +72,14 @@ func main() {
 
 			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 				log.Println(err)
+				bar.Increment()
+				continue
 			}
 
 			if err = ioutil.WriteFile(dir+"/"+attachment.Filename, attachment.Body, 0644); err != nil {
 				log.Println(err)
+				bar.Increment()
+				continue
 			}
 		}
 	}

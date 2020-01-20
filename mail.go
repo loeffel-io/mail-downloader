@@ -4,8 +4,7 @@ import (
 	"fmt"
 	i "github.com/emersion/go-imap"
 	m "github.com/emersion/go-message/mail"
-	"github.com/loeffel-io/helper"
-	"github.com/pkg/errors"
+	"github.com/gabriel-vasile/mimetype"
 	"io"
 	"io/ioutil"
 	"time"
@@ -71,16 +70,15 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 				return err
 			}
 
-			if filename == "" {
-				helper.Debug(header.ContentDisposition())
-				helper.Debug(header.ContentType())
-				return errors.New("attachment without filename")
-			}
-
 			body, err := ioutil.ReadAll(part.Body)
 
 			if err != nil {
 				return err
+			}
+
+			if filename == "" {
+				mime := mimetype.Detect(body)
+				filename = fmt.Sprintf("%d%s", mail.Date.Unix(), mime.Extension())
 			}
 
 			attachments = append(attachments, &attachment{
