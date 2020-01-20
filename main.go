@@ -63,7 +63,7 @@ func main() {
 	seqset := imap.createSeqSet(uids)
 
 	// channel
-	var mailsChan = make(chan *mail, len(uids))
+	var mailsChan = make(chan *mail)
 
 	// start bar
 	bar := pb.StartNew(len(uids))
