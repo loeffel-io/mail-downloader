@@ -1,6 +1,9 @@
 FIXME: catch unexpected EOF error
 unexpected EOF
 
+FIXME: no solution yet
+illegal base64 data at input byte 675
+
 FIXME: create pull request and compare charsets by removing the "-" char
 unhandled charset "utf8"
 unhandled charset "iso8859-15"
