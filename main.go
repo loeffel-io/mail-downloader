@@ -15,6 +15,8 @@ func main() {
 	password := flag.String("password", "", "password")
 	server := flag.String("server", "", "server")
 	port := flag.String("port", "", "port")
+	from := flag.String("from", "", "from")
+	to := flag.String("to", "", "to")
 	flag.Parse()
 
 	// imap
@@ -39,10 +41,19 @@ func main() {
 	_, err := imap.selectMailbox("INBOX")
 
 	// search uids
-	from := time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)
-	to := time.Now()
+	fromDate, err := time.Parse("2006-01-02", *from) // yyyy-MM-dd ISO 8601
 
-	uids, err := imap.search(from, to)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	toDate, err := time.Parse("2006-01-02", *to) // yyyy-MM-dd ISO 8601
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	uids, err := imap.search(fromDate, toDate)
 
 	if err != nil {
 		log.Fatal(err)
