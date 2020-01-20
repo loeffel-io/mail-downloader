@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"time"
 )
 
 func main() {
@@ -41,15 +42,28 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// start bar
-	bar := pb.StartNew(int(inbox.Messages))
+	// search uids
+	from := time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)
+	to := time.Now()
+
+	uids, err := imap.search(from, to)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// seqset
+	seqset := imap.createSeqSet(uids)
 
 	// channel
 	var mailsChan = make(chan *mail, inbox.Messages)
 
+	// start bar
+	bar := pb.StartNew(len(uids))
+
 	// fetch messages
 	go func() {
-		if err = imap.fetchMessages(inbox, mailsChan); err != nil {
+		if err = imap.fetchMessages(inbox, seqset, mailsChan); err != nil {
 			log.Fatal(err)
 		}
 	}()

@@ -9,6 +9,7 @@ import (
 	"golang.org/x/text/encoding/charmap"
 	"log"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
@@ -39,6 +40,21 @@ func (imap *imap) getMailbox(mailbox string) (*i.MailboxStatus, error) {
 	return imap.Client.Select(mailbox, true)
 }
 
+func (imap *imap) search(from, to time.Time) ([]uint32, error) {
+	search := i.NewSearchCriteria()
+	search.Since = from
+	search.Before = to
+
+	return imap.Client.UidSearch(search)
+}
+
+func (imap *imap) createSeqSet(uids []uint32) *i.SeqSet {
+	seqset := new(i.SeqSet)
+	seqset.AddNum(uids...)
+
+	return seqset
+}
+
 func (imap *imap) enableCharsetReader() {
 	charset.RegisterEncoding("ansi", charmap.Windows1252)
 	charset.RegisterEncoding("iso8859-15", charmap.ISO8859_15)
@@ -57,9 +73,7 @@ func (imap *imap) fixUtf(str string) string {
 	return strings.Map(callable, str)
 }
 
-func (imap *imap) fetchMessages(mailbox *i.MailboxStatus, mailsChan chan *mail) error {
-	seqset := new(i.SeqSet)
-	seqset.AddRange(uint32(1), mailbox.Messages)
+func (imap *imap) fetchMessages(mailbox *i.MailboxStatus, seqset *i.SeqSet, mailsChan chan *mail) error {
 	messages := make(chan *i.Message)
 	section := new(i.BodySectionName)
 
