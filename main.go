@@ -66,7 +66,7 @@ func main() {
 	var mailsChan = make(chan *mail)
 
 	// start bar
-	bar := pb.StartNew(int(uids[len(uids)-1]))
+	bar := pb.StartNew(len(uids))
 
 	// fetch messages
 	go func() {
@@ -79,12 +79,12 @@ func main() {
 	for mail := range mailsChan {
 		if mail.Error != nil {
 			log.Println(mail.getErrorText())
-			bar.Set(int(mail.Uid))
+			bar.Increment()
 			continue
 		}
 
 		if len(mail.Attachments) == 0 {
-			bar.Set(int(mail.Uid))
+			bar.Increment()
 			continue
 		}
 
@@ -93,17 +93,15 @@ func main() {
 
 			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 				log.Println(err)
-				bar.Set(int(mail.Uid))
 				continue
 			}
 
 			if err = ioutil.WriteFile(dir+"/"+attachment.Filename, attachment.Body, 0644); err != nil {
 				log.Println(err)
-				bar.Set(int(mail.Uid))
 				continue
 			}
-
-			bar.Set(int(mail.Uid))
 		}
+
+		bar.Increment()
 	}
 }
