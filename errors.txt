@@ -1,6 +1,3 @@
-// FIXME: detect file extension from header.ContentType() to create unique filename (message/delivery-status)
-attachment without filename
-
 FIXME: catch unexpected EOF error
 unexpected EOF
 
