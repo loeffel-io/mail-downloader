@@ -6,6 +6,7 @@ import (
 	"github.com/emersion/go-message/charset"
 	m "github.com/emersion/go-message/mail"
 	"github.com/pkg/errors"
+	"golang.org/x/text/encoding/charmap"
 	"log"
 	"strings"
 	"unicode/utf8"
@@ -39,6 +40,8 @@ func (imap *imap) getMailbox(mailbox string) (*i.MailboxStatus, error) {
 }
 
 func (imap *imap) enableCharsetReader() {
+	charset.RegisterEncoding("ansi", charmap.Windows1252)
+	charset.RegisterEncoding("iso8859-15", charmap.ISO8859_15)
 	i.CharsetReader = charset.Reader
 }
 
