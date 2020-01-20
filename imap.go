@@ -78,7 +78,7 @@ func (imap *imap) fetchMessages(seqset *i.SeqSet, mailsChan chan *mail) error {
 	section := new(i.BodySectionName)
 
 	go func() {
-		if err := imap.Client.Fetch(seqset, []i.FetchItem{section.FetchItem(), i.FetchEnvelope}, messages); err != nil {
+		if err := imap.Client.UidFetch(seqset, []i.FetchItem{section.FetchItem(), i.FetchEnvelope}, messages); err != nil {
 			log.Println(err)
 		}
 	}()
