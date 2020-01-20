@@ -36,7 +36,7 @@ func (imap *imap) login() error {
 	return imap.Client.Login(imap.Username, imap.Password)
 }
 
-func (imap *imap) getMailbox(mailbox string) (*i.MailboxStatus, error) {
+func (imap *imap) selectMailbox(mailbox string) (*i.MailboxStatus, error) {
 	return imap.Client.Select(mailbox, true)
 }
 
@@ -73,7 +73,7 @@ func (imap *imap) fixUtf(str string) string {
 	return strings.Map(callable, str)
 }
 
-func (imap *imap) fetchMessages(mailbox *i.MailboxStatus, seqset *i.SeqSet, mailsChan chan *mail) error {
+func (imap *imap) fetchMessages(seqset *i.SeqSet, mailsChan chan *mail) error {
 	messages := make(chan *i.Message)
 	section := new(i.BodySectionName)
 

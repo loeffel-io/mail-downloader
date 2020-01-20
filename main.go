@@ -35,12 +35,8 @@ func main() {
 
 	imap.enableCharsetReader()
 
-	// mailbox
-	inbox, err := imap.getMailbox("INBOX")
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	// Mailbox
+	_, err := imap.selectMailbox("INBOX")
 
 	// search uids
 	from := time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -56,14 +52,14 @@ func main() {
 	seqset := imap.createSeqSet(uids)
 
 	// channel
-	var mailsChan = make(chan *mail, inbox.Messages)
+	var mailsChan = make(chan *mail, len(uids))
 
 	// start bar
 	bar := pb.StartNew(len(uids))
 
 	// fetch messages
 	go func() {
-		if err = imap.fetchMessages(inbox, seqset, mailsChan); err != nil {
+		if err = imap.fetchMessages(seqset, mailsChan); err != nil {
 			log.Fatal(err)
 		}
 	}()
