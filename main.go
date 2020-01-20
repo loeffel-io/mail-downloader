@@ -102,6 +102,8 @@ func main() {
 				bar.Increment()
 				continue
 			}
+
+			bar.Increment()
 		}
 	}
 }

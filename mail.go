@@ -11,6 +11,7 @@ import (
 )
 
 type mail struct {
+	Uid         uint32
 	MessageID   string
 	Subject     string
 	From        []*i.Address
@@ -26,6 +27,7 @@ type attachment struct {
 }
 
 func (mail *mail) fetchMeta(message *i.Message) {
+	mail.Uid = message.Uid
 	mail.MessageID = message.Envelope.MessageId
 	mail.Subject = message.Envelope.Subject
 	mail.From = message.Envelope.From
