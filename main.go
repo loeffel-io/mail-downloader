@@ -118,7 +118,9 @@ func main() {
 		bytes, err := mail.generatePdf()
 
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err.Error())
+			bar.Increment()
+			continue
 		}
 
 		if bytes == nil {
