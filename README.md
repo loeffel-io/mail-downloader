@@ -9,7 +9,6 @@ Download attachments and mails as pdf with useful filters
 ### Usage
 
 ```bash
-make install
 go build -o mail-downloader
 ./mail-downloader -config=config.yml -from="2019-10-01" -to="2019-12-31"
 ```

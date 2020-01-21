@@ -15,4 +15,5 @@
 /.idea
 /files/*
 /mail-downloader
+/mail_downloader
 /config/*
