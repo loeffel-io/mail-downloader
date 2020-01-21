@@ -1,5 +1,7 @@
 # Mail Downloader
 
+Download attachments and mails as pdf with useful filters
+
 ### Requirements
 
 - [wkhtmltopdf](https://wkhtmltopdf.org/downloads.html)
