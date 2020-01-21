@@ -16,7 +16,7 @@ func (search *Search) Find() bool {
 		split := strings.Split(row, ",")
 
 		for _, cell := range split {
-			if strings.Contains(search.Data, strings.TrimSpace(strings.ToLower(cell))) {
+			if strings.Contains(strings.ToLower(search.Data), strings.TrimSpace(strings.ToLower(cell))) {
 				count.Increase()
 			}
 		}

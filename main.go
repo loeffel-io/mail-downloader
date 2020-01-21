@@ -125,6 +125,16 @@ func main() {
 		}
 
 		// pdf
+		s := &search.Search{
+			Search: config.Mails.Subjects,
+			Data:   mail.Subject,
+		}
+
+		if !s.Find() {
+			bar.Increment()
+			continue
+		}
+
 		bytes, err := mail.generatePdf()
 
 		if err != nil {
