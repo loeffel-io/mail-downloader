@@ -17,3 +17,5 @@
 /mail-downloader
 /mail_downloader
 /config/*
+coverage.txt
+coverage.out
