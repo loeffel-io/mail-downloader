@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	pdf "github.com/adrg/go-wkhtmltopdf"
+	"fmt"
 	"github.com/cheggaaa/pb"
 	"io/ioutil"
 	"log"
@@ -76,42 +76,39 @@ func main() {
 		}
 	}()
 
-	// pdf
-	if err := pdf.Init(); err != nil {
-		log.Fatal(err)
-	}
-
-	defer pdf.Destroy()
-
 	// out messages
 	for mail := range mailsChan {
+		dir := mail.getDirectoryName(imap.Username)
+
 		if mail.Error != nil {
 			log.Println(mail.getErrorText())
 			bar.Increment()
 			continue
 		}
 
-		if len(mail.Attachments) == 0 {
-			if err := mail.generateBodyPdf(); err != nil {
+		// create dir
+		if len(mail.Attachments) != 0 || len(mail.Body) != 0 {
+			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 				log.Fatal(err)
 			}
-
-			bar.Increment()
-			continue
 		}
 
+		// attachments
 		for _, attachment := range mail.Attachments {
-			dir := mail.getDirectoryName(imap.Username)
-
-			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-				log.Println(err)
-				continue
+			if err = ioutil.WriteFile(fmt.Sprintf("%s/%s", dir, attachment.Filename), attachment.Body, 0644); err != nil {
+				log.Fatal(err)
 			}
+		}
 
-			if err = ioutil.WriteFile(dir+"/"+attachment.Filename, attachment.Body, 0644); err != nil {
-				log.Println(err)
-				continue
-			}
+		// pdf
+		bytes, err := mail.generatePdf()
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err = ioutil.WriteFile(fmt.Sprintf("%s/mail-%d.pdf", dir, mail.Uid), bytes, 0644); err != nil {
+			log.Fatal(err)
 		}
 
 		bar.Increment()

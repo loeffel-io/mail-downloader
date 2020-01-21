@@ -3,14 +3,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	pdf "github.com/adrg/go-wkhtmltopdf"
+	"github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	i "github.com/emersion/go-imap"
 	m "github.com/emersion/go-message/mail"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/loeffel-io/tax/counter"
 	"io"
 	"io/ioutil"
-	"os"
 	"time"
 )
 
@@ -85,7 +84,7 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 
 			if filename == "" {
 				mime := mimetype.Detect(body)
-				filename = fmt.Sprintf("%d-%d%s", count.Next(), mail.Date.Unix(), mime.Extension())
+				filename = fmt.Sprintf("%d-%d%s", mail.Uid, count.Next(), mime.Extension())
 			}
 
 			filename = new(imap).fixUtf(filename)
@@ -103,44 +102,33 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 	return nil
 }
 
-func (mail *mail) generateBodyPdf() error {
-	converter, err := pdf.NewConverter()
+func (mail *mail) generatePdf() ([]byte, error) {
+	pdfg, err := wkhtmltopdf.NewPDFGenerator()
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	defer converter.Destroy()
-
-	converter.Title = "Sample document"
-	converter.PaperSize = pdf.A4
-	converter.Orientation = pdf.Portrait
-	converter.MarginTop = "1cm"
-	converter.MarginBottom = "1cm"
-	converter.MarginLeft = "10mm"
-	converter.MarginRight = "10mm"
+	pdfg.Lowquality.Set(true)
+	pdfg.Orientation.Set(wkhtmltopdf.OrientationPortrait)
+	pdfg.PageSize.Set(wkhtmltopdf.PageSizeA4)
 
 	for _, body := range mail.Body {
-		object, err := pdf.NewObjectFromReader(bytes.NewReader(body))
-
-		if err != nil {
-			return err
+		if mime := mimetype.Detect(body); !mime.Is("text/html") {
+			continue
 		}
 
-		converter.Add(object)
+		page := wkhtmltopdf.NewPageReader(bytes.NewReader(body))
+		page.Encoding.Set("UTF-8")
+
+		pdfg.AddPage(page)
 	}
 
-	outFile, err := os.Create(fmt.Sprintf("mail-%d.pdf", time.Now().Unix()))
-
-	if err != nil {
-		return err
+	if err := pdfg.Create(); err != nil {
+		return nil, err
 	}
 
-	if err := converter.Run(outFile); err != nil {
-		return err
-	}
-
-	return outFile.Close()
+	return pdfg.Bytes(), nil
 }
 
 func (mail *mail) getDirectoryName(username string) string {
@@ -151,5 +139,5 @@ func (mail *mail) getDirectoryName(username string) string {
 }
 
 func (mail *mail) getErrorText() string {
-	return fmt.Sprintf("Error: %s\nSubject: %s\nFrom: %s\n", mail.Error.Error(), mail.Subject, mail.Date.Local())
+	return fmt.Sprintf("Error: %s\nSubject: %s\nFrom: %s\n", mail.Error.Error(), mail.Subject, mail.Date)
 }
