@@ -39,15 +39,16 @@ mails:
 
 ```text
 files
-├── December-2019
-│   ├── marketplace.amazon.de
-│   │   │── invoice.pdf
-│   ├── iconfinder.com
-│       │── invoice.pdf
-│       │── invoice-2.pdf
-│       │── mail-123.pdf
-│
-├── November -2019
-│   ├── facebook.com
-│       │── invoice.pdf
+├── secret@gmail.com
+    ├── December-2019
+    │   ├── marketplace.amazon.de
+    │   │   │── invoice.pdf
+    │   ├── iconfinder.com
+    │       │── invoice.pdf
+    │       │── invoice-2.pdf
+    │       │── mail-123.pdf
+    │
+    ├── November -2019
+        ├── facebook.com
+            │── invoice.pdf
 ```
