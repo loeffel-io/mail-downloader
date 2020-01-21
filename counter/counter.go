@@ -21,7 +21,7 @@ func (counter *Counter) increase() {
 	counter.Counter++
 }
 
-func (counter *Counter) current() int {
+func (counter *Counter) Current() int {
 	counter.RLock()
 	defer counter.RUnlock()
 
@@ -30,5 +30,5 @@ func (counter *Counter) current() int {
 
 func (counter *Counter) Next() int {
 	counter.increase()
-	return counter.current()
+	return counter.Current()
 }

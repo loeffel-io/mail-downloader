@@ -107,6 +107,11 @@ func main() {
 			log.Fatal(err)
 		}
 
+		if bytes == nil {
+			bar.Increment()
+			continue
+		}
+
 		if err = ioutil.WriteFile(fmt.Sprintf("%s/mail-%d.pdf", dir, mail.Uid), bytes, 0644); err != nil {
 			log.Fatal(err)
 		}

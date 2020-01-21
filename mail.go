@@ -103,6 +103,8 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 }
 
 func (mail *mail) generatePdf() ([]byte, error) {
+	var count = counter.CreateCounter()
+
 	pdfg, err := wkhtmltopdf.NewPDFGenerator()
 
 	if err != nil {
@@ -122,6 +124,11 @@ func (mail *mail) generatePdf() ([]byte, error) {
 		page.Encoding.Set("UTF-8")
 
 		pdfg.AddPage(page)
+		count.Next()
+	}
+
+	if count.Current() == 0 {
+		return nil, nil
 	}
 
 	if err := pdfg.Create(); err != nil {
