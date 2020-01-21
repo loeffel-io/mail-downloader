@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/cheggaaa/pb"
-	"github.com/loeffel-io/tax/search"
+	"github.com/loeffel-io/mail-downloader/search"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"

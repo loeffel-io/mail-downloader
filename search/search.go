@@ -1,7 +1,7 @@
 package search
 
 import (
-	"github.com/loeffel-io/tax/counter"
+	"github.com/loeffel-io/mail-downloader/counter"
 	"strings"
 )
 

@@ -7,7 +7,7 @@ import (
 	i "github.com/emersion/go-imap"
 	m "github.com/emersion/go-message/mail"
 	"github.com/gabriel-vasile/mimetype"
-	"github.com/loeffel-io/tax/counter"
+	"github.com/loeffel-io/mail-downloader/counter"
 	"io"
 	"io/ioutil"
 	"time"

@@ -14,5 +14,5 @@
 # custom
 /.idea
 /files/*
-/tax
+/mail-downloader
 /config/*
