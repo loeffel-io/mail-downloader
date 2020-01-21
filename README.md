@@ -2,7 +2,7 @@
 
 ### Requirements
 
-- wkhtmltopdf
+- [wkhtmltopdf](https://wkhtmltopdf.org/downloads.html)
 - date format: ISO 8601 - yyyy-MM-dd
 
 ### Usage
