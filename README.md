@@ -25,7 +25,7 @@ attachments:
 
 mails:
   subjects:
-    - invoice
+    - invoice, amazon
     - rechnung
     - receipt
 ```
