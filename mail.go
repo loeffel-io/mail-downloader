@@ -5,6 +5,8 @@ import (
 	i "github.com/emersion/go-imap"
 	m "github.com/emersion/go-message/mail"
 	"github.com/gabriel-vasile/mimetype"
+	"github.com/loeffel-io/helper"
+	"github.com/loeffel-io/tax/counter"
 	"io"
 	"io/ioutil"
 	"time"
@@ -16,7 +18,7 @@ type mail struct {
 	Subject     string
 	From        []*i.Address
 	Date        time.Time
-	Text        [][]byte
+	Body        [][]byte
 	Attachments []*attachment
 	Error       error
 }
@@ -38,6 +40,7 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 	var (
 		bodies      [][]byte
 		attachments []*attachment
+		count       = counter.CreateCounter()
 	)
 
 	for {
@@ -80,7 +83,7 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 
 			if filename == "" {
 				mime := mimetype.Detect(body)
-				filename = fmt.Sprintf("%d%s", mail.Date.Unix(), mime.Extension())
+				filename = fmt.Sprintf("%d-%d%s", count.Next(), mail.Date.Unix(), mime.Extension())
 			}
 
 			filename = new(imap).fixUtf(filename)
@@ -92,8 +95,16 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 		}
 	}
 
-	mail.Text = bodies
+	mail.Body = bodies
 	mail.Attachments = attachments
+
+	return nil
+}
+
+func (mail *mail) generateBodyPdf() error {
+	for _, body := range mail.Body {
+		helper.Debug(string(body))
+	}
 
 	return nil
 }

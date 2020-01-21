@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	pdf "github.com/adrg/go-wkhtmltopdf"
 	"github.com/cheggaaa/pb"
 	"io/ioutil"
 	"log"
@@ -75,6 +76,13 @@ func main() {
 		}
 	}()
 
+	// pdf
+	if err := pdf.Init(); err != nil {
+		log.Fatal(err)
+	}
+
+	defer pdf.Destroy()
+
 	// out messages
 	for mail := range mailsChan {
 		if mail.Error != nil {
@@ -84,6 +92,10 @@ func main() {
 		}
 
 		if len(mail.Attachments) == 0 {
+			if err := mail.generateBodyPdf(); err != nil {
+				log.Fatal(err)
+			}
+
 			bar.Increment()
 			continue
 		}
