@@ -3,7 +3,7 @@
 - wkhtmltopdf required (!)
 
 ```bash
-# date format: yyyy-MM-dd - ISO 8601 
+# date format: yyyy-MM-dd - ISO 8601
 
 make install
 go build -o mail-attachment-downloader

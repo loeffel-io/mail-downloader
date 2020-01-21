@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/cheggaaa/pb"
+	"github.com/loeffel-io/tax/search"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
@@ -109,6 +110,15 @@ func main() {
 
 		// attachments
 		for _, attachment := range mail.Attachments {
+			s := &search.Search{
+				Search: config.Attachments.Mimetypes,
+				Data:   attachment.Mimetype,
+			}
+
+			if !s.Find() {
+				continue
+			}
+
 			if err = ioutil.WriteFile(fmt.Sprintf("%s/%s", dir, attachment.Filename), attachment.Body, 0644); err != nil {
 				log.Fatal(err)
 			}

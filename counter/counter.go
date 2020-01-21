@@ -14,7 +14,7 @@ func CreateCounter() *Counter {
 	}
 }
 
-func (counter *Counter) increase() {
+func (counter *Counter) Increase() {
 	counter.Lock()
 	defer counter.Unlock()
 
@@ -29,6 +29,6 @@ func (counter *Counter) Current() int {
 }
 
 func (counter *Counter) Next() int {
-	counter.increase()
+	counter.Increase()
 	return counter.Current()
 }
