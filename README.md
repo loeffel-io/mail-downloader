@@ -27,8 +27,8 @@ attachments:
     - application/pdf
 
 mails:
-  subjects:
-    - invoice, amazon
-    - rechnung
-    - receipt
+  subjects: # subject contains
+    - invoice, amazon # invoice AND amazon
+    - rechnung # OR rechnung
+    - receipt # OR receipt
 ```
