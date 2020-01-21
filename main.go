@@ -101,13 +101,6 @@ func main() {
 			continue
 		}
 
-		// create dir
-		if len(mail.Attachments) != 0 || len(mail.Body) != 0 {
-			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-				log.Fatal(err)
-			}
-		}
-
 		// attachments
 		for _, attachment := range mail.Attachments {
 			s := &search.Search{
@@ -117,6 +110,10 @@ func main() {
 
 			if !s.Find() {
 				continue
+			}
+
+			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+				log.Fatal(err)
 			}
 
 			if err = ioutil.WriteFile(fmt.Sprintf("%s/%s", dir, attachment.Filename), attachment.Body, 0644); err != nil {
@@ -146,6 +143,10 @@ func main() {
 		if bytes == nil {
 			bar.Increment()
 			continue
+		}
+
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+			log.Fatal(err)
 		}
 
 		if err = ioutil.WriteFile(fmt.Sprintf("%s/mail-%d.pdf", dir, mail.Uid), bytes, 0644); err != nil {
