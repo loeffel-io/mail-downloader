@@ -27,6 +27,7 @@ type mail struct {
 type attachment struct {
 	Filename string
 	Body     []byte
+	Mimetype string
 }
 
 func (mail *mail) fetchMeta(message *i.Message) {
@@ -82,8 +83,9 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 				return err
 			}
 
+			mime := mimetype.Detect(body)
+
 			if filename == "" {
-				mime := mimetype.Detect(body)
 				filename = fmt.Sprintf("%d-%d%s", mail.Uid, count.Next(), mime.Extension())
 			}
 
@@ -92,6 +94,7 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 			attachments = append(attachments, &attachment{
 				Filename: filename,
 				Body:     body,
+				Mimetype: mime.String(),
 			})
 		}
 	}
@@ -121,6 +124,7 @@ func (mail *mail) generatePdf() ([]byte, error) {
 		}
 
 		page := wkhtmltopdf.NewPageReader(bytes.NewReader(body))
+		page.LoadMediaErrorHandling.Set("ignore")
 		page.Encoding.Set("UTF-8")
 
 		pdfg.AddPage(page)

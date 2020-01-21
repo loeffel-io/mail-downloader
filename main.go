@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/cheggaaa/pb"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,21 +12,34 @@ import (
 )
 
 func main() {
+	var config *Config
+
 	// flags
-	username := flag.String("username", "", "username")
-	password := flag.String("password", "", "password")
-	server := flag.String("server", "", "server")
-	port := flag.String("port", "", "port")
-	from := flag.String("from", "", "from")
-	to := flag.String("to", "", "to")
+	configPath := flag.String("config", "", "config path")
+	from := flag.String("from", "", "from date")
+	to := flag.String("to", "", "to date")
 	flag.Parse()
+
+	// yaml
+	yamlBytes, err := ioutil.ReadFile(*configPath)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// yaml to config
+	err = yaml.Unmarshal(yamlBytes, &config)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// imap
 	imap := &imap{
-		Username: *username,
-		Password: *password,
-		Server:   *server,
-		Port:     *port,
+		Username: config.Imap.Username,
+		Password: config.Imap.Password,
+		Server:   config.Imap.Server,
+		Port:     config.Imap.Port,
 	}
 
 	if err := imap.connect(); err != nil {
@@ -39,7 +53,7 @@ func main() {
 	imap.enableCharsetReader()
 
 	// Mailbox
-	_, err := imap.selectMailbox("INBOX")
+	_, err = imap.selectMailbox("INBOX")
 
 	// search uids
 	fromDate, err := time.Parse("2006-01-02", *from) // yyyy-MM-dd ISO 8601
