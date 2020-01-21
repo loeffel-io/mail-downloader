@@ -1,14 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	pdf "github.com/adrg/go-wkhtmltopdf"
 	i "github.com/emersion/go-imap"
 	m "github.com/emersion/go-message/mail"
 	"github.com/gabriel-vasile/mimetype"
-	"github.com/loeffel-io/helper"
 	"github.com/loeffel-io/tax/counter"
 	"io"
 	"io/ioutil"
+	"os"
 	"time"
 )
 
@@ -102,11 +104,43 @@ func (mail *mail) fetchBody(reader *m.Reader) error {
 }
 
 func (mail *mail) generateBodyPdf() error {
-	for _, body := range mail.Body {
-		helper.Debug(string(body))
+	converter, err := pdf.NewConverter()
+
+	if err != nil {
+		return err
 	}
 
-	return nil
+	defer converter.Destroy()
+
+	converter.Title = "Sample document"
+	converter.PaperSize = pdf.A4
+	converter.Orientation = pdf.Portrait
+	converter.MarginTop = "1cm"
+	converter.MarginBottom = "1cm"
+	converter.MarginLeft = "10mm"
+	converter.MarginRight = "10mm"
+
+	for _, body := range mail.Body {
+		object, err := pdf.NewObjectFromReader(bytes.NewReader(body))
+
+		if err != nil {
+			return err
+		}
+
+		converter.Add(object)
+	}
+
+	outFile, err := os.Create(fmt.Sprintf("mail-%d.pdf", time.Now().Unix()))
+
+	if err != nil {
+		return err
+	}
+
+	if err := converter.Run(outFile); err != nil {
+		return err
+	}
+
+	return outFile.Close()
 }
 
 func (mail *mail) getDirectoryName(username string) string {
