@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/cheggaaa/pb"
+	"github.com/cheggaaa/pb/v3"
 	"github.com/loeffel-io/mail-downloader/search"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -81,18 +81,39 @@ func main() {
 	// channel
 	var mailsChan = make(chan *mail)
 
-	// start bar
-	bar := pb.StartNew(len(uids))
-
 	// fetch messages
 	go func() {
 		if err = imap.fetchMessages(seqset, mailsChan); err != nil {
 			log.Fatal(err)
 		}
+
+		close(mailsChan)
 	}()
 
-	// out messages
+	// start bar
+	fmt.Println("Fetching messages...")
+	bar := pb.StartNew(len(uids))
+
+	// mails
+	mails := make([]*mail, 0)
+
+	// fetch messages
 	for mail := range mailsChan {
+		mails = append(mails, mail)
+		bar.Increment()
+	}
+
+	// logout
+	if err := imap.Client.Logout(); err != nil {
+		log.Fatal(err)
+	}
+
+	// start bar
+	fmt.Println("Processing messages...")
+	bar.SetCurrent(0)
+
+	// process messages
+	for _, mail := range mails {
 		dir := mail.getDirectoryName(imap.Username)
 
 		if mail.Error != nil {
@@ -155,4 +176,7 @@ func main() {
 
 		bar.Increment()
 	}
+
+	// done
+	fmt.Println("Done")
 }
