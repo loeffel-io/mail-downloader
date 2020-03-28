@@ -4,6 +4,5 @@ linter:
 test-coverage:
 	go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
 
-test:
-	make linter
-	make test-coverage
+build:
+	go build -o mail-downloader
