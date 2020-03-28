@@ -1,3 +1,6 @@
+install:
+	go get
+
 linter:
 	golangci-lint run
 
