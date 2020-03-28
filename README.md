@@ -1,6 +1,8 @@
 # Mail Downloader
 
-Download attachments and mails as pdf with useful filters
+[![Build Status](https://ci.loeffel.io/api/badges/loeffel-io/mail-downloader/status.svg)](https://ci.loeffel.io/loeffel-io/mail-downloader)
+
+Download attachments and mails as pdf through useful filters
 
 ### Requirements
 
@@ -9,7 +11,7 @@ Download attachments and mails as pdf with useful filters
 ### Usage
 
 ```bash
-go build -o mail-downloader
+make build
 ./mail-downloader -config=config.yml -from="2019-10-01" -to="2019-12-31"
 ```
 
