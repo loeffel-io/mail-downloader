@@ -124,7 +124,7 @@ func (mail *mail) generatePdf() ([]byte, error) {
 		}
 
 		page := wkhtmltopdf.NewPageReader(bytes.NewReader(body))
-		page.LoadMediaErrorHandling.Set("ignore")
+		page.DisableJavascript.Set(true)
 		page.Encoding.Set("UTF-8")
 
 		pdfg.AddPage(page)
