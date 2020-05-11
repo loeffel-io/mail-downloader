@@ -4,7 +4,7 @@
 
 Download attachments and mails as pdf through useful filters
 
-<img src="https://raw.githubusercontent.com/loeffel-io/mail-downloader/master/preview.gif" alt="preview" width="500">
+<img src="https://raw.githubusercontent.com/loeffel-io/mail-downloader/master/preview.gif" alt="preview" width="800">
 
 ### Requirements
 
