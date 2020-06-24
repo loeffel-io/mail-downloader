@@ -19,3 +19,4 @@
 /config/*
 coverage.txt
 coverage.out
+run.sh
