@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"syscall"
 	"time"
 )
 
@@ -142,6 +143,12 @@ func main() {
 			}
 
 			if err = ioutil.WriteFile(fmt.Sprintf("%s/%s", dir, attachment.Filename), attachment.Body, 0644); err != nil {
+				if pe, ok := err.(*os.PathError); ok {
+					if pe.Err == syscall.ENAMETOOLONG {
+						log.Println(err.Error())
+						continue
+					}
+				}
 				log.Fatal(err)
 			}
 		}
