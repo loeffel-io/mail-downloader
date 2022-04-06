@@ -4,21 +4,21 @@ name: docker
 
 steps:
   - name: install
-    image: golang
+    image: golang:1.18
     commands:
       - make install
 
   - name: test
-    image: golang
+    image: golang:1.18
     commands:
       - make test-coverage
 
   - name: linter
-    image: golangci/golangci-lint:v1.23
+    image: golangci/golangci-lint:latest
     commands:
       - make linter
 
   - name: build
-    image: golang
+    image: golang:1.18
     commands:
       - make build

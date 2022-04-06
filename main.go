@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/cheggaaa/pb/v3"
 	"github.com/loeffel-io/mail-downloader/search"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"log"
 	"os"
@@ -55,6 +55,10 @@ func main() {
 
 	// Mailbox
 	_, err = imap.selectMailbox("INBOX")
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// search uids
 	fromDate, err := time.Parse("2006-01-02", *from) // yyyy-MM-dd ISO 8601

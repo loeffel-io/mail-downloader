@@ -114,7 +114,7 @@ func (mail *mail) generatePdf() ([]byte, error) {
 		return nil, err
 	}
 
-	pdfg.Lowquality.Set(true)
+	pdfg.LowQuality.Set(true)
 	pdfg.Orientation.Set(wkhtmltopdf.OrientationPortrait)
 	pdfg.PageSize.Set(wkhtmltopdf.PageSizeA4)
 
