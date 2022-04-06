@@ -1,6 +1,7 @@
 # Mail Downloader
 
 [![Build Status](https://ci.loeffel.io/api/badges/loeffel-io/mail-downloader/status.svg)](https://ci.loeffel.io/loeffel-io/mail-downloader)
+[![Go Report Card](https://goreportcard.com/badge/github.com/loeffel-io/mail-downloader)](https://goreportcard.com/report/github.com/loeffel-io/mail-downloader)
 
 Download attachments and mails as pdf through useful filters
 
