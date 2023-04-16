@@ -52,7 +52,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	imap.enableCharsetReader()
+	// imap.enableCharsetReader()
 
 	// Mailbox
 	_, err = imap.selectMailbox("INBOX")
@@ -80,15 +80,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// seqset
-	seqset := imap.createSeqSet(uids)
-
 	// channel
 	var mailsChan = make(chan *mail)
 
 	// fetch messages
 	go func() {
-		if err = imap.fetchMessages(seqset, mailsChan); err != nil {
+		if err = imap.fetchMessages(uids.All, mailsChan); err != nil {
 			log.Fatal(err)
 		}
 
@@ -97,7 +94,7 @@ func main() {
 
 	// start bar
 	fmt.Println("Fetching messages...")
-	bar := pb.StartNew(len(uids))
+	bar := pb.StartNew(len(uids.All))
 
 	// mails
 	mails := make([]*mail, 0)
@@ -119,6 +116,7 @@ func main() {
 
 	// process messages
 	for _, mail := range mails {
+		log.Printf("%+v", mail.Subject)
 		dir := mail.getDirectoryName(imap.Username)
 
 		if mail.Error != nil {

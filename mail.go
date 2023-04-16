@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/SebastiaanKlippert/go-wkhtmltopdf"
-	i "github.com/emersion/go-imap"
+	i "github.com/emersion/go-imap/v2"
+	"github.com/emersion/go-imap/v2/imapclient"
 	m "github.com/emersion/go-message/mail"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/loeffel-io/mail-downloader/counter"
 	"io"
 	"io/ioutil"
+	n "net/mail"
 	"time"
 )
 
@@ -17,7 +19,7 @@ type mail struct {
 	Uid         uint32
 	MessageID   string
 	Subject     string
-	From        []*i.Address
+	From        []i.Address
 	Date        time.Time
 	Body        [][]byte
 	Attachments []*attachment
@@ -30,12 +32,19 @@ type attachment struct {
 	Mimetype string
 }
 
-func (mail *mail) fetchMeta(message *i.Message) {
-	mail.Uid = message.Uid
-	mail.MessageID = message.Envelope.MessageId
+func (mail *mail) fetchMeta(message *imapclient.FetchMessageBuffer) error {
+	var err error
+
+	mail.Uid = message.UID
+	mail.MessageID = message.Envelope.MessageID
 	mail.Subject = message.Envelope.Subject
 	mail.From = message.Envelope.From
-	mail.Date = message.Envelope.Date
+
+	if mail.Date, err = n.ParseDate(message.Envelope.Date); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (mail *mail) fetchBody(reader *m.Reader) error {
@@ -126,6 +135,10 @@ func (mail *mail) generatePdf() ([]byte, error) {
 		page := wkhtmltopdf.NewPageReader(bytes.NewReader(body))
 		page.DisableJavascript.Set(true)
 		page.Encoding.Set("UTF-8")
+		page.EnableLocalFileAccess.Set(true)
+		page.LoadMediaErrorHandling.Set("ignore")
+		page.LoadErrorHandling.Set("ignore")
+		page.DisableJavascript.Set(true)
 
 		pdfg.AddPage(page)
 		count.Next()
@@ -145,7 +158,7 @@ func (mail *mail) generatePdf() ([]byte, error) {
 func (mail *mail) getDirectoryName(username string) string {
 	return fmt.Sprintf(
 		"files/%s/%s-%d/%s",
-		username, mail.Date.Month(), mail.Date.Year(), mail.From[0].HostName,
+		username, mail.Date.Month(), mail.Date.Year(), mail.From[0].Host, // HostName
 	)
 }
 

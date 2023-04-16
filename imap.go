@@ -1,12 +1,10 @@
 package main
 
 import (
-	i "github.com/emersion/go-imap"
-	"github.com/emersion/go-imap/client"
-	"github.com/emersion/go-message/charset"
+	"bytes"
+	i "github.com/emersion/go-imap/v2"
+	"github.com/emersion/go-imap/v2/imapclient"
 	m "github.com/emersion/go-message/mail"
-	"github.com/pkg/errors"
-	"golang.org/x/text/encoding/charmap"
 	"log"
 	"strings"
 	"time"
@@ -18,11 +16,11 @@ type imap struct {
 	Password string
 	Server   string
 	Port     string
-	Client   *client.Client
+	Client   *imapclient.Client
 }
 
 func (imap *imap) connect() error {
-	c, err := client.DialTLS(imap.Server+":"+imap.Port, nil)
+	c, err := imapclient.DialTLS(imap.Server+":"+imap.Port, nil)
 
 	if err != nil {
 		return err
@@ -33,32 +31,18 @@ func (imap *imap) connect() error {
 }
 
 func (imap *imap) login() error {
-	return imap.Client.Login(imap.Username, imap.Password)
+	return imap.Client.Login(imap.Username, imap.Password).Wait()
 }
 
-func (imap *imap) selectMailbox(mailbox string) (*i.MailboxStatus, error) {
-	return imap.Client.Select(mailbox, true)
+func (imap *imap) selectMailbox(mailbox string) (*i.SelectData, error) {
+	return imap.Client.Select(mailbox).Wait()
 }
 
-func (imap *imap) search(from, to time.Time) ([]uint32, error) {
-	search := i.NewSearchCriteria()
-	search.Since = from
-	search.Before = to
-
-	return imap.Client.UidSearch(search)
-}
-
-func (imap *imap) createSeqSet(uids []uint32) *i.SeqSet {
-	seqset := new(i.SeqSet)
-	seqset.AddNum(uids...)
-
-	return seqset
-}
-
-func (imap *imap) enableCharsetReader() {
-	charset.RegisterEncoding("ansi", charmap.Windows1252)
-	charset.RegisterEncoding("iso8859-15", charmap.ISO8859_15)
-	i.CharsetReader = charset.Reader
+func (imap *imap) search(from, to time.Time) (*i.SearchData, error) {
+	return imap.Client.UIDSearch(&i.SearchCriteria{
+		Since:  from,
+		Before: to,
+	}, nil).Wait()
 }
 
 func (imap *imap) fixUtf(str string) string {
@@ -73,24 +57,25 @@ func (imap *imap) fixUtf(str string) string {
 	return strings.Map(callable, str)
 }
 
-func (imap *imap) fetchMessages(seqset *i.SeqSet, mailsChan chan *mail) error {
-	messages := make(chan *i.Message)
-	section := new(i.BodySectionName)
+func (imap *imap) fetchMessages(seqset i.SeqSet, mailsChan chan *mail) error {
+	msgBuffer, err := imap.Client.UIDFetch(seqset, []i.FetchItem{i.FetchItemBody, i.FetchItemBodyStructure, i.FetchItemEnvelope}).Collect()
 
-	go func() {
-		if err := imap.Client.UidFetch(seqset, []i.FetchItem{section.FetchItem(), i.FetchEnvelope}, messages); err != nil {
-			log.Println(err)
-		}
-	}()
+	if err != nil {
+		log.Println(err)
+	}
 
-	for message := range messages {
+	for _, message := range msgBuffer {
 		mail := new(mail)
-		mail.fetchMeta(message)
+		if err = mail.fetchMeta(message); err != nil {
+			return err
+		}
 
-		reader := message.GetBody(section)
-
-		if reader == nil {
-			return errors.New("no reader")
+		var reader *bytes.Reader
+		log.Printf("%+v", message.BodyStructure)
+		for test, b := range message.BodySection {
+			log.Printf("%+v", test)
+			return nil
+			reader = bytes.NewReader(b)
 		}
 
 		mailReader, err := m.CreateReader(reader)
