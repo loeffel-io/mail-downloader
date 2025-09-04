@@ -1,6 +1,6 @@
 module github.com/loeffel-io/mail-downloader
 
-go 1.23
+go 1.25
 
 require (
 	github.com/cheggaaa/pb/v3 v3.1.5
