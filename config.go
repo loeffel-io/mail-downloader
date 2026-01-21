@@ -8,8 +8,8 @@ type Config struct {
 		Port     string `yaml:"port"`
 	} `yaml:"imap"`
 
-	Attachments struct {
-		Mimetypes []string `yaml:"mimetypes"`
+	Attachments map[string]struct {
+		Subjects []string `yaml:"subjects"`
 	} `yaml:"attachments"`
 
 	Mails struct {

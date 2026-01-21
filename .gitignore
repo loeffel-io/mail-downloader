@@ -14,10 +14,11 @@
 # custom
 /.idea
 /files
+/files_backup
 /mail-downloader
 /mail_downloader
 /config/*
 coverage.txt
 coverage.out
 run.sh
-DS.Store
+.DS_Store

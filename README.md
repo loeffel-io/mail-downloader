@@ -7,10 +7,6 @@ Years later, this tool is still a thing. I use it every month to download all my
 
 <img src="https://raw.githubusercontent.com/loeffel-io/mail-downloader/master/preview.gif" alt="preview" width="800">
 
-### Requirements
-
-- [wkhtmltopdf](https://wkhtmltopdf.org/downloads.html)
-
 ### Usage
 
 ```bash
@@ -28,8 +24,11 @@ imap:
   port: 993
 
 attachments:
-  mimetypes:
-    - application/pdf
+  application/pdf:
+    subjects: # subject contains
+      - invoice, amazon # invoice AND amazon
+      - rechnung # OR rechnung
+      - receipt # OR receipt
 
 mails:
   subjects: # subject contains
@@ -55,4 +54,3 @@ files
         ├── facebook.com
             │── invoice.pdf
 ```
-
